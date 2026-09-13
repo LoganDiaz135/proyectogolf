@@ -13,7 +13,11 @@ import com.example.borradordegolf.sensors.SwingDetector
 import com.example.borradordegolf.ui.GolfScreen
 import com.example.borradordegolf.ui.GolfViewModel
 import com.example.borradordegolf.ui.theme.BorradorDeGolfTheme
-
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import com.example.borradordegolf.ui.MenuScreen
 class MainActivity : ComponentActivity() {
     private val viewModel: GolfViewModel by viewModels()
     private lateinit var swingDetector: SwingDetector
@@ -30,11 +34,20 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BorradorDeGolfTheme {
+                var enJuego by remember { mutableStateOf(false) }
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    GolfScreen(
-                        viewModel = viewModel,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    if (enJuego) {
+                        GolfScreen(
+                            viewModel = viewModel,
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    } else {
+                        MenuScreen(
+                            onJugar = { enJuego = true },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }
                 }
             }
         }
