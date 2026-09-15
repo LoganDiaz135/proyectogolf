@@ -75,9 +75,9 @@ class SwingDetector(
             val dt = (event.timestamp - timestamp) * 1.0f / 1000000000.0f
             // El eje Z del giroscopio mide la rotación en el plano del celular
             val angularVelocityZ = event.values[2]
-            
+
             // Actualizamos el ángulo basado en la velocidad angular (integración)
-            currentAngleRad += angularVelocityZ * dt
+            currentAngleRad -= angularVelocityZ * dt
             onAimChanged(currentAngleRad)
         }
         timestamp = event.timestamp

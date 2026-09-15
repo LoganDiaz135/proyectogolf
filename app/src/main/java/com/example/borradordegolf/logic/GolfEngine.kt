@@ -4,6 +4,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+private const val FIELD_MIN = 0f
+private const val FIELD_MAX = 100f
+private const val MAX_BOUNCES = 8
 data class Point(val x: Float, val y: Float)
 
 class GolfEngine(
@@ -29,28 +32,67 @@ class GolfEngine(
 
         strokeCount++
 
-        val oldX = ballPosition.x
-        val oldY = ballPosition.y
+        var x = ballPosition.x
+        var y = ballPosition.y
+        var dx = force * cos(directionRad)
+        var dy = force * sin(directionRad)
 
-        val deltaX = force * cos(directionRad)
-        val deltaY = force * sin(directionRad)
+        var bounces = 0
+        while (bounces <= MAX_BOUNCES) {
+            val endX = x + dx
+            val endY = y + dy
 
-        val newX = (ballPosition.x + deltaX).coerceIn(0f, 100f)
-        val newY = (ballPosition.y + deltaY).coerceIn(0f, 100f)
+            // ¿En qué punto del recorrido toca cada pared? (2 = no la toca)
+            val tX = when {
+                endX < FIELD_MIN -> (FIELD_MIN - x) / dx
+                endX > FIELD_MAX -> (FIELD_MAX - x) / dx
+                else -> 2f
+            }
+            val tY = when {
+                endY < FIELD_MIN -> (FIELD_MIN - y) / dy
+                endY > FIELD_MAX -> (FIELD_MAX - y) / dy
+                else -> 2f
+            }
 
-        // Comprobamos si la trayectoria pasó por el hoyo antes de actualizar la posición
-        checkTrajectory(oldX, oldY, newX, newY)
-        
+            val t = minOf(tX, tY)
+
+            // No choca con nada: tramo final
+            if (t > 1f) {
+                checkTrajectory(x, y, endX, endY)
+                x = endX
+                y = endY
+                break
+            }
+
+            // Choca: avanzamos solo hasta la pared
+            val wallX = x + dx * t
+            val wallY = y + dy * t
+            checkTrajectory(x, y, wallX, wallY)
+
+            x = wallX
+            y = wallY
+
+            if (isHoleCompleted) break
+
+            // Rebote: se invierte el eje que chocó
+            if (tX <= tY) dx = -dx else dy = -dy
+
+            // Y sigue con lo que le quedaba de impulso
+            dx *= (1f - t)
+            dy *= (1f - t)
+
+            bounces++
+        }
+
         if (isHoleCompleted) {
-            // Si entró en el hoyo por el camino, la pelota se queda en el hoyo
             ballPosition = holePosition
         } else {
-            ballPosition = Point(newX, newY)
-
+            ballPosition = Point(
+                x.coerceIn(FIELD_MIN, FIELD_MAX),
+                y.coerceIn(FIELD_MIN, FIELD_MAX)
+            )
             checkHole()
-            if (isHoleCompleted) {
-                ballPosition = holePosition
-            }
+            if (isHoleCompleted) ballPosition = holePosition
         }
     }
 
