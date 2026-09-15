@@ -63,13 +63,13 @@ fun GolfScreen(viewModel: GolfViewModel, modifier: Modifier = Modifier) {
                 shadow = Shadow(color = Color.Gray, offset = Offset(2f, 2f), blurRadius = 4f)
             )
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         if (isDebugMode) {
-            Text("DEBUG MODE ON - Toca el campo para simular golpe", color = Color.Red, fontSize = 10.sp)
+            Text("DEBUG MODE ON - Tap the field to simulate a shot", color = Color.Red, fontSize = 10.sp)
         }
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -79,8 +79,8 @@ fun GolfScreen(viewModel: GolfViewModel, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(16.dp).fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                StatItem(label = "Golpes", value = state.strokeCount.toString())
-                StatItem(label = "Hoyo", value = "1")
+                StatItem(label = "Strokes", value = state.strokeCount.toString())
+                StatItem(label = "Hole", value = "1")
                 StatItem(label = "Par", value = "3")
             }
         }
@@ -111,7 +111,7 @@ fun GolfScreen(viewModel: GolfViewModel, modifier: Modifier = Modifier) {
                 (state.ballPosition.x / 100f) * width,
                 (state.ballPosition.y / 100f) * height
             )
-            
+
             val animatedBallOffset by animateOffsetAsState(
                 targetValue = targetOffset,
                 animationSpec = spring(
@@ -127,7 +127,7 @@ fun GolfScreen(viewModel: GolfViewModel, modifier: Modifier = Modifier) {
                     val arrowLength = 60.dp.toPx()
                     val arrowEndX = animatedBallOffset.x + arrowLength * kotlin.math.cos(state.aimingDirectionRad)
                     val arrowEndY = animatedBallOffset.y + arrowLength * kotlin.math.sin(state.aimingDirectionRad)
-                    
+
                     drawLine(
                         color = Color.White.copy(alpha = 0.7f),
                         start = animatedBallOffset,
@@ -135,7 +135,7 @@ fun GolfScreen(viewModel: GolfViewModel, modifier: Modifier = Modifier) {
                         strokeWidth = 4.dp.toPx(),
                         cap = androidx.compose.ui.graphics.StrokeCap.Round
                     )
-                    
+
                     // Cabeza de la flecha
                     drawCircle(
                         color = Color.White,
@@ -147,7 +147,7 @@ fun GolfScreen(viewModel: GolfViewModel, modifier: Modifier = Modifier) {
                 // Dibujar Hoyo
                 val holeX = (state.holePosition.x / 100f) * width
                 val holeY = (state.holePosition.y / 100f) * height
-                
+
                 // Sombra del hoyo
                 drawCircle(
                     color = Color.Black.copy(alpha = 0.3f),
@@ -197,7 +197,7 @@ fun GolfScreen(viewModel: GolfViewModel, modifier: Modifier = Modifier) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "¡GENIAL!\nHoyo Completado",
+                        text = "AWESOME!\nHole Completed",
                         style = MaterialTheme.typography.headlineLarge.copy(
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.Yellow,
@@ -218,7 +218,7 @@ fun GolfScreen(viewModel: GolfViewModel, modifier: Modifier = Modifier) {
                 trackColor = Color.LightGray
             )
             Text(
-                text = "Último golpe: ${"%.0f".format(state.lastSwingForce)}%",
+                text = "Last shot: ${"%.0f".format(state.lastSwingForce)}%",
                 style = MaterialTheme.typography.labelSmall
             )
         }
@@ -232,12 +232,12 @@ fun GolfScreen(viewModel: GolfViewModel, modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
             ) {
-                Text("Reiniciar", color = Color.White)
+                Text("Restart", color = Color.White)
             }
         }
-        
+
         Text(
-            text = "💡 Tip: Haz el swing más rápido para llegar más lejos.",
+            text = "💡 Tip: Swing faster to hit farther.",
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = 12.dp),
             color = Color.DarkGray
