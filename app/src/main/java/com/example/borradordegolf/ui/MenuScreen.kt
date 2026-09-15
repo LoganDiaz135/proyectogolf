@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 
-
 @Composable
 fun MenuScreen(onJugar: () -> Unit, modifier: Modifier = Modifier) {
     Column(
@@ -48,7 +47,7 @@ fun MenuScreen(onJugar: () -> Unit, modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
-            Text("Jugar", color = Color.White)
+            Text("Play", color = Color.White)
         }
     }
 }

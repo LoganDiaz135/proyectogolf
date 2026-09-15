@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.example.borradordegolf.ui.MenuScreen
+import com.example.borradordegolf.ui.Pantalla
 class MainActivity : ComponentActivity() {
     private val viewModel: GolfViewModel by viewModels()
     private lateinit var swingDetector: SwingDetector
@@ -34,17 +35,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BorradorDeGolfTheme {
-                var enJuego by remember { mutableStateOf(false) }
+                var pantallaActual by remember { mutableStateOf(Pantalla.MENU) }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    if (enJuego) {
+                    if (pantallaActual == Pantalla.JUEGO) {
                         GolfScreen(
                             viewModel = viewModel,
                             modifier = Modifier.padding(innerPadding)
                         )
                     } else {
                         MenuScreen(
-                            onJugar = { enJuego = true },
+                            onJugar = { pantallaActual = Pantalla.JUEGO },
                             modifier = Modifier.padding(innerPadding)
                         )
                     }
