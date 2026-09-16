@@ -8,24 +8,27 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.borradordegolf.sensors.SwingDetector
 import com.example.borradordegolf.ui.GolfScreen
 import com.example.borradordegolf.ui.GolfViewModel
-import com.example.borradordegolf.ui.theme.BorradorDeGolfTheme
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import com.example.borradordegolf.ui.LevelSelectScreen
 import com.example.borradordegolf.ui.MenuScreen
 import com.example.borradordegolf.ui.Pantalla
+import com.example.borradordegolf.ui.theme.BorradorDeGolfTheme
+
 class MainActivity : ComponentActivity() {
     private val viewModel: GolfViewModel by viewModels()
     private lateinit var swingDetector: SwingDetector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         swingDetector = SwingDetector(
             context = this,
             onAimChanged = { direction -> viewModel.onAimChanged(direction) },
@@ -36,16 +39,32 @@ class MainActivity : ComponentActivity() {
         setContent {
             BorradorDeGolfTheme {
                 var pantallaActual by remember { mutableStateOf(Pantalla.MENU) }
+                val unlockedLevels by viewModel.unlockedLevels.collectAsState()
+                val completedLevels by viewModel.completedLevels.collectAsState()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    if (pantallaActual == Pantalla.JUEGO) {
-                        GolfScreen(
+                    when (pantallaActual) {
+                        Pantalla.JUEGO -> GolfScreen(
                             viewModel = viewModel,
+                            onBackToMenu = { pantallaActual = Pantalla.MENU },
                             modifier = Modifier.padding(innerPadding)
                         )
-                    } else {
-                        MenuScreen(
-                            onJugar = { pantallaActual = Pantalla.JUEGO },
+                        Pantalla.NIVELES -> LevelSelectScreen(
+                            unlockedLevels = unlockedLevels,
+                            completedLevels = completedLevels,
+                            onLevelSelected = { levelNumber ->
+                                viewModel.loadLevel(levelNumber)
+                                pantallaActual = Pantalla.JUEGO
+                            },
+                            onBack = { pantallaActual = Pantalla.MENU },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                        Pantalla.MENU -> MenuScreen(
+                            onJugar = {
+                                viewModel.startFromProgress()
+                                pantallaActual = Pantalla.JUEGO
+                            },
+                            onNiveles = { pantallaActual = Pantalla.NIVELES },
                             modifier = Modifier.padding(innerPadding)
                         )
                     }
