@@ -1,12 +1,13 @@
 package com.example.borradordegolf.logic
 
 import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
 private const val FIELD_MIN = 0f
 private const val FIELD_MAX = 100f
-private const val MAX_BOUNCES = 8
+
 data class Point(val x: Float, val y: Float)
 
 class GolfEngine(
@@ -17,82 +18,97 @@ class GolfEngine(
     var ballPosition: Point = startPosition
         private set
 
+    private var velocityX: Float = 0f
+    private var velocityY: Float = 0f
+
+    var isMoving: Boolean = false
+        private set
+
     var strokeCount: Int = 0
         private set
 
     var isHoleCompleted: Boolean = false
         private set
 
+    companion object {
+        // Fracción de velocidad que se pierde por segundo debido a la fricción del pasto
+        const val FRICTION_PER_SECOND = 0.5f
+        // Velocidad por debajo de la cual consideramos que la pelota está detenida
+        const val MIN_SPEED = 1.5f
+        // Fracción de velocidad conservada al rebotar contra una pared
+        const val WALL_RESTITUTION = 0.65f
+    }
+
     /**
-     * Calcula la nueva posición de la pelota basada en la fuerza y dirección.
-     * La dirección se espera en radianes.
+     * Establece la velocidad inicial de la pelota. No mueve la pelota directamente:
+     * el movimiento real ocurre llamando a step() repetidamente.
      */
     fun hitBall(force: Float, directionRad: Float) {
-        if (isHoleCompleted) return
+        if (isHoleCompleted || isMoving) return
 
         strokeCount++
+        velocityX = force * cos(directionRad)
+        velocityY = force * sin(directionRad)
+        isMoving = true
+    }
 
-        var x = ballPosition.x
-        var y = ballPosition.y
-        var dx = force * cos(directionRad)
-        var dy = force * sin(directionRad)
+    /**
+     * Avanza la simulación un pequeño intervalo de tiempo (en segundos).
+     * Debe llamarse repetidamente (ej. cada 16ms) mientras isMoving == true.
+     */
+    fun step(deltaTime: Float) {
+        if (!isMoving || isHoleCompleted) return
 
-        var bounces = 0
-        while (bounces <= MAX_BOUNCES) {
-            val endX = x + dx
-            val endY = y + dy
+        val prevX = ballPosition.x
+        val prevY = ballPosition.y
 
-            // ¿En qué punto del recorrido toca cada pared? (2 = no la toca)
-            val tX = when {
-                endX < FIELD_MIN -> (FIELD_MIN - x) / dx
-                endX > FIELD_MAX -> (FIELD_MAX - x) / dx
-                else -> 2f
-            }
-            val tY = when {
-                endY < FIELD_MIN -> (FIELD_MIN - y) / dy
-                endY > FIELD_MAX -> (FIELD_MAX - y) / dy
-                else -> 2f
-            }
+        var newX = prevX + velocityX * deltaTime
+        var newY = prevY + velocityY * deltaTime
 
-            val t = minOf(tX, tY)
-
-            // No choca con nada: tramo final
-            if (t > 1f) {
-                checkTrajectory(x, y, endX, endY)
-                x = endX
-                y = endY
-                break
-            }
-
-            // Choca: avanzamos solo hasta la pared
-            val wallX = x + dx * t
-            val wallY = y + dy * t
-            checkTrajectory(x, y, wallX, wallY)
-
-            x = wallX
-            y = wallY
-
-            if (isHoleCompleted) break
-
-            // Rebote: se invierte el eje que chocó
-            if (tX <= tY) dx = -dx else dy = -dy
-
-            // Y sigue con lo que le quedaba de impulso
-            dx *= (1f - t)
-            dy *= (1f - t)
-
-            bounces++
+        // Rebote contra las paredes exteriores en X
+        if (newX < FIELD_MIN) {
+            newX = FIELD_MIN
+            velocityX = -velocityX * WALL_RESTITUTION
+        } else if (newX > FIELD_MAX) {
+            newX = FIELD_MAX
+            velocityX = -velocityX * WALL_RESTITUTION
         }
+
+        // Rebote contra las paredes exteriores en Y
+        if (newY < FIELD_MIN) {
+            newY = FIELD_MIN
+            velocityY = -velocityY * WALL_RESTITUTION
+        } else if (newY > FIELD_MAX) {
+            newY = FIELD_MAX
+            velocityY = -velocityY * WALL_RESTITUTION
+        }
+
+        // Revisamos si en este tramo del recorrido la pelota pasó por el hoyo
+        checkTrajectory(prevX, prevY, newX, newY)
 
         if (isHoleCompleted) {
             ballPosition = holePosition
-        } else {
-            ballPosition = Point(
-                x.coerceIn(FIELD_MIN, FIELD_MAX),
-                y.coerceIn(FIELD_MIN, FIELD_MAX)
-            )
+            velocityX = 0f
+            velocityY = 0f
+            isMoving = false
+            return
+        }
+
+        ballPosition = Point(newX, newY)
+
+        // Fricción: reduce la velocidad de forma exponencial, independiente del framerate
+        val frictionFactor = (1.0 - FRICTION_PER_SECOND.toDouble())
+            .pow(deltaTime.toDouble())
+            .toFloat()
+        velocityX *= frictionFactor
+        velocityY *= frictionFactor
+
+        val speed = sqrt(velocityX * velocityX + velocityY * velocityY)
+        if (speed < MIN_SPEED) {
+            velocityX = 0f
+            velocityY = 0f
+            isMoving = false
             checkHole()
-            if (isHoleCompleted) ballPosition = holePosition
         }
     }
 
@@ -100,18 +116,14 @@ class GolfEngine(
         val hx = holePosition.x
         val hy = holePosition.y
 
-        // Vector del segmento P1 -> P2
         val dx = x2 - x1
         val dy = y2 - y1
 
-        // Si la pelota casi no se movió, dejamos que checkHole se encargue
         if (dx == 0f && dy == 0f) return
 
-        // t es la posición relativa en el segmento (0 a 1)
         val t = ((hx - x1) * dx + (hy - y1) * dy) / (dx * dx + dy * dy)
 
-        // Si la proyección cae dentro del segmento (0 <= t <= 1)
-        if (t in 0.0f..1.0f) {
+        if (t in 0f..1f) {
             val closestX = x1 + t * dx
             val closestY = y1 + t * dy
             val distDx = hx - closestX
@@ -136,6 +148,9 @@ class GolfEngine(
 
     fun reset() {
         ballPosition = startPosition
+        velocityX = 0f
+        velocityY = 0f
+        isMoving = false
         strokeCount = 0
         isHoleCompleted = false
     }

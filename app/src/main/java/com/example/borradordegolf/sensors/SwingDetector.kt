@@ -21,6 +21,9 @@ class SwingDetector(
     private var lastSwingTime = 0L
     private val COOLDOWN_MS = 800L
 
+    // Límite máximo de fuerza para evitar valores exagerados con swings muy bruscos
+    private val MAX_FORCE = 120f
+
     // Para la dirección (Giroscopio)
     private var currentAngleRad = -Math.PI.toFloat() / 2f // Apuntando hacia arriba por defecto
     private var timestamp: Long = 0
@@ -64,7 +67,7 @@ class SwingDetector(
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastSwingTime > COOLDOWN_MS) {
                 lastSwingTime = currentTime
-                val force = magnitude * 3.5f
+                val force = (magnitude * 3.5f).coerceIn(0f, MAX_FORCE)
                 onSwingDetected(force)
             }
         }
