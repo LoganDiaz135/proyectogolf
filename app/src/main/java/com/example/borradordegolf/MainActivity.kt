@@ -21,6 +21,7 @@ import com.example.borradordegolf.ui.LevelSelectScreen
 import com.example.borradordegolf.ui.MenuScreen
 import com.example.borradordegolf.ui.Pantalla
 import com.example.borradordegolf.ui.theme.BorradorDeGolfTheme
+import com.example.borradordegolf.ui.InstructionsScreen
 
 class MainActivity : ComponentActivity() {
     private val viewModel: GolfViewModel by viewModels()
@@ -65,6 +66,11 @@ class MainActivity : ComponentActivity() {
                                 pantallaActual = Pantalla.JUEGO
                             },
                             onNiveles = { pantallaActual = Pantalla.NIVELES },
+                            onComoJugar = { pantallaActual = Pantalla.INSTRUCCIONES },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                        Pantalla.INSTRUCCIONES -> InstructionsScreen(
+                            onBack = { pantallaActual = Pantalla.MENU },
                             modifier = Modifier.padding(innerPadding)
                         )
                     }

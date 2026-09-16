@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 fun MenuScreen(
     onJugar: () -> Unit,
     onNiveles: () -> Unit,
+    onComoJugar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -95,6 +96,19 @@ fun MenuScreen(
             colors = ButtonDefaults.outlinedButtonColors(contentColor = ColorCream)
         ) {
             Text("NIVELES", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedButton(
+            onClick = onComoJugar,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = ColorCream)
+        ) {
+            Text("CÓMO JUGAR", fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
     }
 }
