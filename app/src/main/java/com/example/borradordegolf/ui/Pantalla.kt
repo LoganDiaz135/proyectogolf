@@ -1,5 +1,5 @@
 package com.example.borradordegolf.ui
 
-enum class Pantalla {
-    MENU, JUEGO, NIVELES, INSTRUCCIONES
+enum class Screen {
+    MENU, GAME, LEVELS, INSTRUCTIONS
 }

@@ -33,9 +33,9 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun MenuScreen(
-    onJugar: () -> Unit,
-    onNiveles: () -> Unit,
-    onComoJugar: () -> Unit,
+    onPlay: () -> Unit,
+    onLevels: () -> Unit,
+    onHowToPlay: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -72,7 +72,7 @@ fun MenuScreen(
         Spacer(modifier = Modifier.height(56.dp))
 
         Button(
-            onClick = onJugar,
+            onClick = onPlay,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -88,7 +88,7 @@ fun MenuScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedButton(
-            onClick = onNiveles,
+            onClick = onLevels,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -101,7 +101,7 @@ fun MenuScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
-            onClick = onComoJugar,
+            onClick = onHowToPlay,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),

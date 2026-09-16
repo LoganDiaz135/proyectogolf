@@ -73,7 +73,6 @@ class GolfEngine(
         }
 
         // --- NUEVO: colisión contra obstáculos internos del nivel ---
-        // Reutiliza WALL_RESTITUTION, no introduce una física distinta.
         for (obstacle in obstacles) {
             if (newX in obstacle.left..obstacle.right && newY in obstacle.top..obstacle.bottom) {
                 val penetrationX = minOf(newX - obstacle.left, obstacle.right - newX)

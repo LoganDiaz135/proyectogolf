@@ -17,11 +17,11 @@ import androidx.compose.ui.Modifier
 import com.example.borradordegolf.sensors.SwingDetector
 import com.example.borradordegolf.ui.GolfScreen
 import com.example.borradordegolf.ui.GolfViewModel
+import com.example.borradordegolf.ui.InstructionsScreen
 import com.example.borradordegolf.ui.LevelSelectScreen
 import com.example.borradordegolf.ui.MenuScreen
-import com.example.borradordegolf.ui.Pantalla
+import com.example.borradordegolf.ui.Screen
 import com.example.borradordegolf.ui.theme.BorradorDeGolfTheme
-import com.example.borradordegolf.ui.InstructionsScreen
 
 class MainActivity : ComponentActivity() {
     private val viewModel: GolfViewModel by viewModels()
@@ -39,38 +39,38 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BorradorDeGolfTheme {
-                var pantallaActual by remember { mutableStateOf(Pantalla.MENU) }
+                var currentScreen by remember { mutableStateOf(Screen.MENU) }
                 val unlockedLevels by viewModel.unlockedLevels.collectAsState()
                 val completedLevels by viewModel.completedLevels.collectAsState()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    when (pantallaActual) {
-                        Pantalla.JUEGO -> GolfScreen(
+                    when (currentScreen) {
+                        Screen.GAME -> GolfScreen(
                             viewModel = viewModel,
-                            onBackToMenu = { pantallaActual = Pantalla.MENU },
+                            onBackToMenu = { currentScreen = Screen.MENU },
                             modifier = Modifier.padding(innerPadding)
                         )
-                        Pantalla.NIVELES -> LevelSelectScreen(
+                        Screen.LEVELS -> LevelSelectScreen(
                             unlockedLevels = unlockedLevels,
                             completedLevels = completedLevels,
                             onLevelSelected = { levelNumber ->
                                 viewModel.loadLevel(levelNumber)
-                                pantallaActual = Pantalla.JUEGO
+                                currentScreen = Screen.GAME
                             },
-                            onBack = { pantallaActual = Pantalla.MENU },
+                            onBack = { currentScreen = Screen.MENU },
                             modifier = Modifier.padding(innerPadding)
                         )
-                        Pantalla.MENU -> MenuScreen(
-                            onJugar = {
+                        Screen.MENU -> MenuScreen(
+                            onPlay = {
                                 viewModel.startFromProgress()
-                                pantallaActual = Pantalla.JUEGO
+                                currentScreen = Screen.GAME
                             },
-                            onNiveles = { pantallaActual = Pantalla.NIVELES },
-                            onComoJugar = { pantallaActual = Pantalla.INSTRUCCIONES },
+                            onLevels = { currentScreen = Screen.LEVELS },
+                            onHowToPlay = { currentScreen = Screen.INSTRUCTIONS },
                             modifier = Modifier.padding(innerPadding)
                         )
-                        Pantalla.INSTRUCCIONES -> InstructionsScreen(
-                            onBack = { pantallaActual = Pantalla.MENU },
+                        Screen.INSTRUCTIONS -> InstructionsScreen(
+                            onBack = { currentScreen = Screen.MENU },
                             modifier = Modifier.padding(innerPadding)
                         )
                     }
